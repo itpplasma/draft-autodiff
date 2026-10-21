@@ -125,4 +125,6 @@ jobs:
           cd MEPHIT
           "$CODE/scripts/checkout_branch.sh" "$CODE_BRANCH"
           make
+          python3 -m venv "$RUNNER_TEMP/mephit-venv"
+          source "$RUNNER_TEMP/mephit-venv/bin/activate"
           pip install -e .
