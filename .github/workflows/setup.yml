@@ -19,6 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout libneo
+        uses: actions/checkout@v4
+        with:
+          repository: itpplasma/libneo
+          path: libneo
+
       - name: Install dependencies
         run: |
           sudo apt-get update -y && sudo apt-get install -y -q --no-install-recommends \
@@ -79,6 +85,8 @@ jobs:
             libboost-all-dev
 
       - name: Setup
+        env:
+          MAKEFLAGS: -j1
         run: |
           set -e
           source scripts/setup.sh
