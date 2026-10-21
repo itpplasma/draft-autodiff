@@ -4,7 +4,8 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Pull requests and the merge queue; main itself is not re-tested on push
+  push:
+    branches: [main]
   pull_request:
   merge_group:
 
@@ -13,12 +14,16 @@ on:
 
 env:
   GIT_HTTPS: "true"
+  MPLBACKEND: Agg
+  DISPLAY: ""
   CI_MERGE_REQUEST_SOURCE_BRANCH_NAME: "${{ github.head_ref }}"
 
 jobs:
   code:
     name: Build and test
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, itp-ubuntu24]
+    if: >-
+      github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.actor != 'github-merge-queue[bot]')
 
     steps:
       - name: Install dependencies
@@ -82,7 +87,7 @@ jobs:
           source activate.sh
           clone_github NEO-2
           cd NEO-2
-          $CODE/scripts/checkout_branch.sh $CODE_BRANCH
+          "$CODE/scripts/checkout_branch.sh" "$CODE_BRANCH"
           make
 
       - name: NEO-RT
@@ -90,7 +95,7 @@ jobs:
           source activate.sh
           clone_github NEO-RT
           cd NEO-RT
-          $CODE/scripts/checkout_branch.sh $CODE_BRANCH
+          "$CODE/scripts/checkout_branch.sh" "$CODE_BRANCH"
           make
 
       - name: SIMPLE
@@ -98,7 +103,7 @@ jobs:
           source activate.sh
           clone_github SIMPLE
           cd SIMPLE
-          $CODE/scripts/checkout_branch.sh $CODE_BRANCH
+          "$CODE/scripts/checkout_branch.sh" "$CODE_BRANCH"
           make
 
 
@@ -107,7 +112,7 @@ jobs:
           source activate.sh
           clone_github GORILLA
           cd GORILLA
-          $CODE/scripts/checkout_branch.sh $CODE_BRANCH
+          "$CODE/scripts/checkout_branch.sh" "$CODE_BRANCH"
           make
 
       - name: MEPHIT
@@ -115,9 +120,11 @@ jobs:
           source activate.sh
           clone_github MEPHIT
           source /etc/profile.d/modules.sh
-          module use -a $CODE/modules
+          module use -a "$CODE/modules"
           module load mephit
           cd MEPHIT
-          $CODE/scripts/checkout_branch.sh $CODE_BRANCH
+          "$CODE/scripts/checkout_branch.sh" "$CODE_BRANCH"
           make
+          python3 -m venv "$RUNNER_TEMP/mephit-venv"
+          source "$RUNNER_TEMP/mephit-venv/bin/activate"
           pip install -e .
