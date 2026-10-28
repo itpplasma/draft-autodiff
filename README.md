@@ -1,116 +1,33 @@
-# CODE
+# draft-autodiff
 
-This is the ITPcp plasma group meta-repository that collects scripts
-to setup development and use of internal and external codes. Our development
-environment is Visual Studio Code, and we strongly recommend GitHub Copilot
-there and in the [CLI](https://docs.github.com/en/copilot/github-copilot-in-the-cli/setting-up-github-copilot-in-the-cli).
+Exploratory repository for automatic differentiation of the group's Fortran
+codes. It started as a copy of the [code](https://github.com/itpplasma/code)
+meta-repository; the experiment itself is in
+[draft-autodiff/](draft-autodiff/README.md).
 
-CODE is based around our standard Debian bookworm system at ITPcp and provides
+Status: draft; not maintained as a development environment.
 
-- Setup scripts `scripts/setup/...`
-- Quality-of-life shell commands via `scripts/util.sh`
-- A standardized activation together with a Python virtual environment from `requirements.txt`
-- CI/CD for integration between codes and data
-- Container definitions
-- VSCode settings
+## Contents
 
-## Getting Started
+- [draft-autodiff/](draft-autodiff/README.md): test of compiling Fortran to
+  LLVM IR with Flang and differentiating with Enzyme
+- `NEO-2`, `SIMPLE`, `libneo`, `fortplotlib`, `fpm`, `sfincs`, `assi`,
+  `benchmark_orbit`: code repositories recorded as Git submodule commits.
+  There is no `.gitmodules` file, so `git submodule update` does not fetch them;
+  clone the repositories separately if needed.
+- `scripts/`, `modules/`, `images/`, `activate.sh`, `requirements.txt`,
+  `tests/`: setup scripts, environment modules, container images, shell
+  activation and integration tests copied from the code meta-repository (state
+  of mid-2025). The maintained versions are in
+  [itpplasma/code](https://github.com/itpplasma/code).
 
-If you haven't done so earlier, set up your SSH keys in `~/.ssh` via `ssh-keygen`
-with a **blank passphrase** and add the content of `id_rsa.pub` to Gitlab and GitHub
-for authentication.
+## Running the experiment
 
-### Perparing your machine
+The build script assumes Homebrew on macOS with Flang, LLVM 19 and Enzyme
+0.0.187 installed at their Homebrew paths:
 
-On Linux: At ITPcp computers all packages should be installed to get going.
-On your own Debian system, run [scripts/setup/debian.sh](scripts/setup/debian.sh).
+    cd draft-autodiff
+    ./build.sh
 
-On Mac: The recommended way via **orbstack**
-and **devpod** as described in [scripts/setup/mac.sh](scripts/setup/mac.sh).
-
-On Windows: Prepare your machine with
-[scripts/setup/windows.bat](scripts/setup/windows.bat) first
-to install Debian Linux via WSL2. Then follow the Linux instructions.
-
-
-### Initial setup
-
-Clone the repository to your working copy, at the institute this is
-
-    git clone git@github.com:itpplasma/code /proj/plasma/CODE/<username>
-
-Then open the directory in VS Code with
-
-    code code
-
-When asked to initialize the devcontainer, remove the message.
-Run the setup script manually with
-
-    scripts/setup.sh
-
-The setup will install external dependencies and create
-a Python virtual environment in the hidden `.venv` directory.
-
-Finally, activate the environment with
-
-    source activate.sh
-
-To use this environment as a standard, put the activation
-script into bashrc with
-
-    echo "source $PWD/activate.sh" >> ~/.bashrc
-
-## External codes
-
-### Intel compiler for codes GPEC and MARS
-GPEC and MARS require the Intel toolchain with classic `ifort` to be installed. Run
-
-    scripts/setup/compiler_intel.sh
-
-to install the compiler and libraries HDF5 and NetCDFwith modules. Then the commands
-
-    scripts/setup/gpec.sh
-    scripts/setup/mars.sh
-
-will install GPEC and MARS into `$CODE/external/intel`. They can then be loaded with
-
-    module load gpec
-    module load mars
-
-to make dependencies and binaries available in the shell. Be careful not to work on
-codes based on GNU Fortran in the same shell.
-
-### OMFIT
-OMFIT requires its own Python environment provided via `conda`. Both will be installed
-to `$CODE/external` by running
-
-    deactivate
-    scripts/setup/omfit.sh
-
-OMFIT can then be loaded with
-
-    deactivate
-    source $CODE/external/mambaforge/bin/activate omfit
-    module load omfit
-
-and then started with `omfit` in the shell. Be careful not to work on codes
-based on the standard Python venv in the same shell.
-
-## Testing
-
-Integration tests are run by
-
-    pytest tests/
-
-This will perform all the tests in `tests/` and its subfolders.
-
-## Merging
-
-- Pull requests, including every layer of a stacked PR, run CI.
-- Review a stack layer by layer. When it is ready, collapse it into one PR into
-  `main` (retarget the top layer to `main`); the lower PRs then show as merged.
-- Click "Merge when ready" (or `gh pr merge --merge --auto`). The PR enters the
-  merge queue, CI runs on the exact merge result, and on success it lands on
-  `main` as a merge commit. `main` itself is not re-tested on push.
-- A branch need not be up to date with `main`. Merge `main` into a PR only
-  when it conflicts.
+See [draft-autodiff/README.md](draft-autodiff/README.md) for what it does and
+what was found.
